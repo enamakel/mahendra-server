@@ -14,15 +14,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vals = [];
     $buffer = [];
 
-
     // Get the user first by user id
     $q = "SELECT * FROM login WHERE id='$userId';";
     $result = $conn->query($q);
     $user = $result->fetch_assoc();
 
-
     // Start preparing the query for the leads
-    $q = "SELECT * FROM leads ";
+    $q = "SELECT * FROM leads WHERE creator_id!='$userId' ";
+
+    if (isset($_GET["job_seeker"])) {
+        $val = $_GET["job_seeker"] ? 1 : 0;
+        $vals[] = "is_job_seeker='$val'";
+    } else if (isset($_GET["service_seeker"])) {
+        $val = $_GET["service_seeker"] ? 1 : 0;
+        $vals[] = "is_service_seeker='$val'";
+    } else if (isset($_GET["product_seeker"])) {
+        $val = $_GET["product_seeker"] ? 1 : 0;
+        $vals[] = "is_product_seeker='$val'";
+    }
 
     if (isset($user["job_sector_id"])) {
         $val = $user["job_sector_id"];
@@ -59,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $vals[] = "location_id='$val'";
     }
 
-    if (count($vals) > 0) $q .= "WHERE " . join($vals, " AND ");
+    if (count($vals) > 0) $q .= "AND " . join($vals, " AND ");
 
     // Sort by date created
     $q .= " ORDER BY created_at DESC";
