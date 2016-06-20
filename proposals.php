@@ -6,8 +6,8 @@ include_once('db_connect.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // If we are submitting a new proposal, details go in here.
-    $userId = $_POST["userid"];
-    $leadId = $_POST["leadid"];
+    $userId = $_POST["user_id"];
+    $leadId = $_POST["lead_id"];
 
     $q = "INSERT INTO proposals SET
         engaging_user_id='$userId',
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 } else {
     // Fetch all the leads for the current user.
-    $userId = $_GET["userid"];
+    $userId = $_GET["user_id"];
     $vals = [];
     $buffer = [];
 
@@ -38,7 +38,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Fetch all the data and return the results.
     if ($result) {
-        while ($data = $result->fetch_assoc()) { $buffer[] = $data; }
+        while ($data = $result->fetch_assoc()) {
+            // Fetch and attach the user
+            $engaging_user_id = $data["engaging_user_id"];
+            $q = "SELECT * FROM login WHERE id='$engaging_user_id';";
+            $result = $conn->query($q);
+            $data["user"] = $result->fetch_assoc();
+
+            // Fetch and attach the lead
+            $lead = $data["lead_id"];
+            $q = "SELECT * FROM leads WHERE id='$lead';";
+            $result = $conn->query($q);
+            $data["lead"] = $result->fetch_assoc();
+
+            $buffer[] = $data;
+        }
         echo json_encode($buffer);
     } else echo '[]';
 }
