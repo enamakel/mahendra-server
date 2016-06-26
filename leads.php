@@ -149,7 +149,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Fetch all the data and return the results.
     if ($result) {
-        while ($data = $result->fetch_assoc()) { $buffer[] = $data; }
+        while ($data = $result->fetch_assoc()) {
+            $userId = $data["creator_id"];
+            $q = "SELECT * FROM login WHERE id='$userId';";
+            $result2 = $conn->query($q);
+            $data["creator"] = $result2->fetch_assoc();
+
+            $buffer[] = $data;
+        }
         echo json_encode($buffer);
     } else echo '[]';
 }
