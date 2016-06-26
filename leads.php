@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vals = checkAndSet("is_service_seeker", $vals);
     $vals = checkAndSet("product_name_id", $vals);
     $vals = checkAndSet("product_channel_id", $vals);
+    $vals = checkAndSet("is_product_seeker", $vals);
     $vals = checkAndSet("location_id", $vals);
 
     $q .= join($vals, ", ") . ";";
