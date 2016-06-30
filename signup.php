@@ -1,64 +1,52 @@
 <?php
-header('Content-Type: application/json');
+// header('Content-Type: application/json');
 include_once('db_connect.php');
 
+$data = json_decode(file_get_contents('php://input'), true);
 
-$name = mysqli_real_escape_string($conn, $_POST['name']);
-$phone = mysqli_real_escape_string($conn, $_POST['phone']);
-$password = mysqli_real_escape_string($conn, $_POST['password']);
-$location_id = mysqli_real_escape_string($conn, $_POST['location_id']);
-$bizType = mysqli_real_escape_string($conn, $_POST['bizType']);
+$name = mysqli_real_escape_string($conn, $data['name']);
+$phone = mysqli_real_escape_string($conn, $data['phone']);
+$password = mysqli_real_escape_string($conn, $data['password']);
+$bizType = mysqli_real_escape_string($conn, $data['bizType']);
 
 $q = "SELECT * FROM login WHERE phone='$phone' LIMIT 1";
 $result = $conn->query($q);
+
+function addRelation($userId, $key, $value, $conn) {
+    $query="INSERT INTO relations SET user_id='$userId', $key='$value';";
+    $conn->query($query);
+}
+
+function processArray($userId, $arr, $dbKey, $conn) {
+    foreach ($arr as $value) addRelation($userId, $dbKey, $value, $conn);
+}
 
 if ($result->num_rows > 0) {
     $resp = array('message' => 'error_exists');
     http_response_code(400);
 
 } else {
-    $query="
-        INSERT INTO login SET
-            name='$name',
-            phone='$phone',
-            bizType='$bizType',
-            location_id='$location_id',
-            password='$password',";
+    $query="INSERT INTO login SET
+        name='$name',
+        phone='$phone',
+        bizType='$bizType',
+        password='$password';";
 
 
-    if (isset($_POST["job_sector_id"])) {
-        $val = $_POST["job_sector_id"];
-        $vals[] = "job_sector_id='$val'";
-    }
+    $result = $conn->query($query);
+    $newUserId = mysqli_insert_id($conn);
 
-    if (isset($_POST["job_role_id"])) {
-        $val = $_POST["job_role_id"];
-        $vals[] = "job_role_id='$val'";
-    }
+    processArray($newUserId, $data["locationsIds"], "location_id", $conn);
 
-    if (isset($_POST["service_occupation_id"])) {
-        $val = $_POST["service_occupation_id"];
-        $vals[] = "service_occupation_id='$val'";
-    }
+    processArray($newUserId, $data["jobRolesIds"], "job_role_id", $conn);
+    processArray($newUserId, $data["jobSectorsIds"], "job_sector_id", $conn);
 
-    if (isset($_POST["service_name_id"])) {
-        $val = $_POST["service_name_id"];
-        $vals[] = "service_name_id='$val'";
-    }
+    processArray($newUserId, $data["productChannelIds"], "product_channel_id", $conn);
+    processArray($newUserId, $data["productNameIds"], "product_name_id", $conn);
 
-    if (isset($_POST["product_channel_id"])) {
-        $val = $_POST["product_channel_id"];
-        $vals[] = "product_channel_id='$val'";
-    }
+    processArray($newUserId, $data["serviceNamesIds"], "service_name_id", $conn);
+    processArray($newUserId, $data["serviceOccupationIds"], "service_occupation_id", $conn);
 
-    if (isset($_POST["product_name_id"])) {
-        $val = $_POST["product_name_id"];
-        $vals[] = "product_name_id='$val'";
-    }
-
-    $query .= join($vals, ", ") . ";";
-
-    $conn->query($query);
     $resp = array('message' => 'saved');
 }
 

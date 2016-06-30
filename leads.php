@@ -14,6 +14,27 @@ function checkAndSet($key, $arr) {
     return $arr;
 }
 
+function pickAndSetArray($key, $relation, $result) {
+    if(isset($relation[$key])) {
+        if(!isset($result[$key])) $result[$key] = [];
+        $result[$key][] = $relation[$key];
+    }
+
+    return $result;
+}
+
+
+function createStatement($userRelations, $key) {
+        $subVal = [];
+
+        if (isset($userRelations[$key]) && count($userRelations[$key]) > 0) {
+            $subVal = join($userRelations[$key], ", ");
+            return "$key in ($subVal)";
+        }
+
+        return "$key=null";
+    }
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // If we are submitting a new lead, details go in here.
@@ -45,11 +66,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = $_GET["user_id"];
     $vals = [];
     $buffer = [];
+    $userRelations = [];
 
     // Get the user first by user id
     $q = "SELECT * FROM login WHERE id='$userId';";
     $result = $conn->query($q);
     $user = $result->fetch_assoc();
+
+    $q = "SELECT * FROM relations WHERE user_id='$userId';";
+    $result = $conn->query($q);
+    while ($data = $result->fetch_assoc()) { $userRelations[] = $data; }
+
+    foreach ($userRelations as $relation) {
+        $buffer = pickAndSetArray("job_sector_id", $relation, $buffer);
+        $buffer = pickAndSetArray("job_role_id", $relation, $buffer);
+        $buffer = pickAndSetArray("service_occupation_id", $relation, $buffer);
+        $buffer = pickAndSetArray("service_name_id", $relation, $buffer);
+        $buffer = pickAndSetArray("product_channel_id", $relation, $buffer);
+        $buffer = pickAndSetArray("product_name_id", $relation, $buffer);
+        $buffer = pickAndSetArray("location_id", $relation, $buffer);
+    }
+    $userRelations = $buffer;
+    $buffer = [];
 
     // Start preparing the query for the leads
     $q = "SELECT * FROM leads WHERE creator_id!='$userId' ";
@@ -66,83 +104,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $getProducts = $_GET["no_products"] ? false : true;
     }
 
-    if (isset($_GET["job_seeker"]) && $getJobs) {
-        $val = $_GET["job_seeker"] ? 1 : 0;
-        $vals[] = "is_job_seeker='$val'";
-    } else if (isset($_GET["service_seeker"]) && $getServices) {
-        $val = $_GET["service_seeker"] ? 1 : 0;
-        $vals[] = "is_service_seeker='$val'";
-    } else if (isset($_GET["product_seeker"]) && $getProducts) {
-        $val = $_GET["product_seeker"] ? 1 : 0;
-        $vals[] = "is_product_seeker='$val'";
-    }
-
-    $requests = [];
 
     if ($getJobs) {
-        if (isset($user["job_sector_id"])) {
-            $val = $user["job_sector_id"];
-            $vals[] = "job_sector_id='$val'";
+        if (isset($_GET["job_seeker"])) {
+            $val = $_GET["job_seeker"] ? 1 : 0;
+            $buffer[] = "is_job_seeker='$val'";
         }
 
-        if (isset($user["job_role_id"])) {
-            $val = $user["job_role_id"];
-            $vals[] = "job_role_id='$val'";
-        }
+        $buffer[] = createStatement($userRelations, "job_sector_id");
+        $buffer[] = createStatement($userRelations, "job_role_id");
     } else {
-        $vals[] = "job_sector_id=null";
-        $vals[] = "job_role_id=null";
+        $buffer[] = "job_sector_id=null";
+        $buffer[] = "job_role_id=null";
     }
-
-    if (count($vals) > 0) $requests[] = join($vals, " AND ");
-    $vals = [];
+    if (count($buffer) > 0) $requests[] = join($buffer, " AND ");
+    $buffer = [];
 
 
     if ($getServices) {
-        if (isset($user["service_occupation_id"]) && $getServices) {
-            $val = $user["service_occupation_id"];
-            $vals[] = "service_occupation_id='$val'";
+        if (isset($_GET["service_seeker"])) {
+            $val = $_GET["service_seeker"] ? 1 : 0;
+            $buffer[] = "is_service_seeker='$val'";
         }
 
-        if (isset($user["service_name_id"]) && $getServices) {
-            $val = $user["service_name_id"];
-            $vals[] = "service_name_id='$val'";
-        }
+        $buffer[] = createStatement($userRelations, "service_occupation_id");
+        $buffer[] = createStatement($userRelations, "service_name_id");
     } else {
         $vals[] = "service_occupation_id=null";
         $vals[] = "service_name_id=null";
     }
+    if (count($buffer) > 0) $requests[] = join($buffer, " AND ");
+    $buffer = [];
 
-    if (count($vals) > 0) $requests[] = join($vals, " AND ");
-    $vals = [];
 
     if ($getProducts) {
-        if (isset($user["product_channel_id"]) && $getProducts) {
-            $val = $user["product_channel_id"];
-            $vals[] = "product_channel_id='$val'";
+        if (isset($_GET["product_seeker"])) {
+            $val = $_GET["product_seeker"] ? 1 : 0;
+            $buffer[] = "is_product_seeker='$val'";
         }
 
-        if (isset($user["product_name_id"]) && $getProducts) {
-            $val = $user["product_name_id"];
-            $vals[] = "product_name_id='$val'";
-        }
+        $buffer[] = createStatement($userRelations, "product_channel_id");
+        $buffer[] = createStatement($userRelations, "product_name_id");
     } else {
-        $vals[] = "job_sector_id=null";
-        $vals[] = "job_role_id=null";
+        $vals[] = "product_channel_id=null";
+        $vals[] = "product_name_id=null";
     }
+    if (count($buffer) > 0) $requests[] = join($buffer, " AND ");
+    $buffer = [];
 
-    if (count($vals) > 0) $requests[] = join($vals, " AND ");
-    $vals = [];
 
-    if (isset($user["location_id"])) {
-        $val = $user["location_id"];
-        $vals[] = "location_id='$val'";
-    }
+    if (count($requests) > 0) $q .= "AND (" . join($requests, ") OR (") . ")";
 
-    if (count($vals) > 0) $q .= "AND (" . join($requests, ") OR (") . ")";
+    $q .= " AND " . createStatement($userRelations, "location_id");
 
     // Sort by date created
     $q .= " ORDER BY created_at DESC";
+
+    // echo $q;
 
     // Execute the query!
     $result = $conn->query($q);
