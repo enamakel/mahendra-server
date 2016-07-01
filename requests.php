@@ -10,7 +10,7 @@ $userId = $_GET["user_id"];
 $buffer = [];
 
 // Execute the query
-$q = "SELECT * FROM leads WHERE creator_id='$userId' ORDER BY created_at DESC";
+$q = "SELECT * FROM leads WHERE creator_id='$userId' AND is_deleted = 0 ORDER BY created_at DESC";
 $result = $conn->query($q);
 
 // Fetch all the data and return the results.

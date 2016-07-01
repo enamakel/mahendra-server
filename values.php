@@ -11,13 +11,13 @@ function grabAll($table, $conn) {
     return $buffer;
 }
 
+$muffer = [];
+$muffer["service_names"] = grabAll("service_names", $conn);
+$muffer["locations"] = grabAll("locations", $conn);
+$muffer["job_sectors"] = grabAll("job_sectors", $conn);
+$muffer["job_roles"] = grabAll("job_roles", $conn);
+$muffer["service_occupations"] = grabAll("service_occupations", $conn);
+$muffer["product_channels"] = grabAll("product_channels", $conn);
+$muffer["product_names"] = grabAll("product_names", $conn);
 
-$data["service_names"] = grabAll("service_names", $conn);
-$data["locations"] = grabAll("locations", $conn);
-$data["job_sectors"] = grabAll("job_sectors", $conn);
-$data["job_roles"] = grabAll("job_roles", $conn);
-$data["service_occupations"] = grabAll("service_occupations", $conn);
-$data["product_channels"] = grabAll("product_channels", $conn);
-$data["product_names"] = grabAll("product_names", $conn);
-
-echo json_encode($data);
+echo json_encode($muffer);

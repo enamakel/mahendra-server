@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $buffer = [];
 
     // Start preparing the query for the leads
-    $q = "SELECT * FROM leads WHERE creator_id!='$userId' ";
+    $q = "SELECT * FROM leads WHERE creator_id!='$userId' AND is_deleted = 0 ";
 
     $getJobs = true;
     $getServices = true;
@@ -159,8 +159,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Sort by date created
     $q .= " ORDER BY created_at DESC";
-
-    // echo $q;
 
     // Execute the query!
     $result = $conn->query($q);
