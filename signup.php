@@ -28,7 +28,8 @@ function processArray($userId, $arr, $dbKey, $conn) {
 
 
 if ($result->num_rows > 0) {
-    $resp = array('message' => 'error_exists');
+    $resp = $result->fetch_assoc();
+    // $resp = array('message' => 'error_exists');
     http_response_code(400);
 
 } else {
