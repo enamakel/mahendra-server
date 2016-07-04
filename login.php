@@ -2,12 +2,11 @@
 header('Content-Type: application/json');
 include_once('db_connect.php');
 
-$phone = mysqli_real_escape_string($conn, $_POST['phone']);
 $password = mysqli_real_escape_string($conn, $_POST['password']);
 
 $q = "
     SELECT * FROM login
-        WHERE phone='$phone' AND password='$password'
+        WHERE password='$password'
     LIMIT 1;
 ";
 
