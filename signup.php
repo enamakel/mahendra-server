@@ -9,11 +9,11 @@ $phone = mysqli_real_escape_string($conn, $data['phone']);
 $password = mysqli_real_escape_string($conn, $data['password']);
 $bizType = mysqli_real_escape_string($conn, $data['bizType']);
 
-$q = "SELECT * FROM login
+$query = "SELECT * FROM login
     WHERE
         password='$password'
     LIMIT 1;";
-$result = $conn->query($q);
+$result = $conn->query($query);
 
 
 function addRelation($userId, $key, $value, $conn) {
@@ -54,7 +54,15 @@ if ($result->num_rows > 0) {
     processArray($newUserId, $data["serviceNamesIds"], "service_name_id", $conn);
     processArray($newUserId, $data["serviceOccupationIds"], "service_occupation_id", $conn);
 
-    $resp = array('message' => 'saved');
+    $query = "
+        SELECT * FROM login
+            WHERE id='$newUserId'
+        LIMIT 1;
+    ";
+    $result = $conn->query($query);
+    if ($result->num_rows > 0) {
+        $resp = $result->fetch_assoc();
+    } else $resp = array('message' => 'not saved');
 }
 
 echo json_encode($resp);
