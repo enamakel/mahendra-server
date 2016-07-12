@@ -9,7 +9,7 @@ $phone = mysqli_real_escape_string($conn, $data['phone']);
 $password = mysqli_real_escape_string($conn, $data['password']);
 $bizType = mysqli_real_escape_string($conn, $data['bizType']);
 
-$q = "SELECT * FROM login WHERE phone='$phone' LIMIT 1";
+$q = "SELECT * FROM login WHERE password='$password' LIMIT 1";
 $result = $conn->query($q);
 
 function addRelation($userId, $key, $value, $conn) {

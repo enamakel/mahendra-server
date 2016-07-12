@@ -19,19 +19,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 } else {
     // Fetch all the leads for the current user.
-    $userId = $_GET["user_id"];
+    // $userId = $_GET["user_id"];
+    $leadId = $_GET["lead_id"];
     $vals = [];
     $buffer = [];
 
     // Get the user first by user id
-    $q = "SELECT * FROM login WHERE id='$userId';";
-    $result = $conn->query($q);
-    $user = $result->fetch_assoc();
+    // $q = "SELECT * FROM login WHERE id='$userId';";
+    // $result = $conn->query($q);
+    // $user = $result->fetch_assoc();
 
     // Start preparing the query for the leads
-    $q = "SELECT * from proposals WHERE lead_id in (
-        SELECT id FROM leads WHERE creator_id = '$userId'
-    ) ORDER BY created_at DESC;";
+    $q = "SELECT * from proposals WHERE lead_id = '$leadId'
+        ORDER BY created_at DESC;";
+    // $q = "SELECT * from proposals WHERE lead_id in (
+    //     SELECT id FROM leads WHERE creator_id = '$userId'
+    // ) ORDER BY created_at DESC;";
 
     // Execute the query!
     $result = $conn->query($q);
