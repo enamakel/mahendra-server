@@ -8,14 +8,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // If we are submitting a new proposal, details go in here.
     $userId = $_POST["user_id"];
     $leadId = $_POST["lead_id"];
+    $leadJson = $_POST["lead_json"];
+    $leadUserId = $_POST["lead_user_id"];
 
+    // Create the proposal first!
     $q = "INSERT INTO proposals SET
         engaging_user_id='$userId',
+        target_user_id='$leadUserId',
+        lead_json='$leadJson',
         lead_id='$leadId';
     ";
+    $result = $conn->query($q);
+    $newProposalId = mysqli_insert_id($conn);
 
-    $conn->query($q);
-    echo json_encode(array('message' => 'saved'));
+    // Create the chat second!
+    $q = "INSERT INTO chats SET
+        user_id_a='$userId',
+        user_id_b='$leadUserId',
+        proposal_id='$newProposalId';
+    ";
+    $result = $conn->query($q);
+    $newChatId = mysqli_insert_id($conn);
+
+    $q = "SELECT * from chats WHERE
+        proposal_id = '$newProposalId' AND
+        user_id_a='$userId' AND
+        user_id_b='$leadUserId'";
+    $result = $conn->query($q);
+
+    // Return the chat id!
+    echo json_encode($result->fetch_assoc());
 
 } else {
     // Fetch all the leads for the current user.

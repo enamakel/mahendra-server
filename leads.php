@@ -153,9 +153,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $buffer = [];
 
 
-    if (count($requests) > 0) $q .= "AND (" . join($requests, ") OR (") . ")";
+    if (count($requests) > 0) $q .= "AND ((" . join($requests, ") OR (") . ")";
 
-    $q .= " AND " . createStatement($userRelations, "location_id");
+    $q .= ") AND " . createStatement($userRelations, "location_id");
 
     // Sort by date created
     $q .= " ORDER BY created_at DESC";

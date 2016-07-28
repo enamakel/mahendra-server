@@ -10,8 +10,7 @@ $password = mysqli_real_escape_string($conn, $data['password']);
 $bizType = mysqli_real_escape_string($conn, $data['bizType']);
 
 $query = "SELECT * FROM login
-    WHERE
-        password='$password'
+    WHERE password='$password'
     LIMIT 1;";
 $result = $conn->query($query);
 

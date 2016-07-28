@@ -1,39 +1,31 @@
 <?php
-include_once('config.php');
+
+// file to send a message from the user
+
+include_once('../db_connect.php');
 header('Content-Type: application/json');
 
-$proposal_id = $_GET["proposal_id"];
+$chat_id = $_REQUEST["chat_id"];
 
-try {
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-    // set the PDO error mode to exception
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-	$sql = "SELECT u.name, m.text FROM
-        messages as m
-            JOIN
-        login as u
-        WHERE
-            u.id = m.user_id AND
-            m.proposal_id = $proposal_id
-        ORDER BY  m.id";
-
-	$stmt = $conn->prepare($sql);
-    $stmt->execute();
-
-    // set the resulting array to associative
-    $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+$query="SELECT * FROM messages
+    WHERE
+        chat_id='$chat_id'";
 
 
-		  $resultSet['result'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-		 //print_r($resultSet);
-		  $resultSet['status']="True";
-		  $resultSet['count']=$stmt->rowCount();
-		echo json_encode($resultSet);
-    }
-catch(PDOException $e)
-    {
-    echo $sql . "<br>" . $e->getMessage();
-    }
+$result = $conn->query($query);
 
-?>
+$buffer = [];
+while ($data = $result->fetch_assoc()) {
+    $reciever_id = $data["user_id"];
+    $q = "SELECT * FROM login WHERE id='$reciever_id';";
+    $result2 = $conn->query($q);
+    $data["user"] = $result2->fetch_assoc();
+
+    // $sender_id = $data["sender_id"];
+    // $q = "SELECT * FROM login WHERE id='$sender_id';";
+    // $result2 = $conn->query($q);
+    // $data["sender"] = $result2->fetch_assoc();
+
+    $buffer[] = $data;
+}
+echo json_encode($buffer);
