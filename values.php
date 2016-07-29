@@ -33,10 +33,11 @@ function grabAllFromParent($table, $subTable, $conn) {
 }
 
 $muffer = [];
+
 $muffer["locations"] = grabAll("locations", $conn);
+$muffer["business_types"] = grabAll("business_types", $conn);
 $muffer["job_sectors"] = grabAllFromParent("job_sectors", "job_roles", $conn);
 $muffer["service_occupations"] = grabAllFromParent("service_occupations", "service_names", $conn);
-$muffer["product_channels"] = grabAll("product_channels", $conn);
-$muffer["product_names"] = grabAll("product_names", $conn);
+$muffer["product_channels"] = grabAllFromParent("product_channels", "product_names", $conn);
 
 echo json_encode($muffer);
