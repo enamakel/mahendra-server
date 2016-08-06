@@ -11,15 +11,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $leadJson = $_POST["lead_json"];
     $leadUserId = $_POST["lead_user_id"];
 
-    // Create the proposal first!
-    $q = "INSERT INTO proposals SET
-        engaging_user_id='$userId',
-        target_user_id='$leadUserId',
-        lead_json='$leadJson',
-        lead_id='$leadId';
+    // First check if there is a proposal that exists or not
+    $q = "
+        SELECT * FROM proposals
+            WHERE
+                lead_id='$leadId' AND
+                engaging_user_id='$userId'
+        LIMIT 1;
     ";
     $result = $conn->query($q);
-    $newProposalId = mysqli_insert_id($conn);
+    if ($result->num_rows > 0) {
+        $proposal = $result->fetch_assoc();
+        $newProposalId = $result["id"];
+    } else {
+        // Propsal doesn't exist, create it!
+        $q = "INSERT INTO proposals SET
+            engaging_user_id='$userId',
+            target_user_id='$leadUserId',
+            lead_json='$leadJson',
+            lead_id='$leadId';
+        ";
+        $result = $conn->query($q);
+        $newProposalId = mysqli_insert_id($conn);
+    }
 
     // Create the chat second!
     $q = "INSERT INTO chats SET
