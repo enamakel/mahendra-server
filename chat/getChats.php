@@ -9,7 +9,8 @@ $user_id = $_REQUEST["user_id"];
 
 $query="SELECT * FROM chats
     WHERE
-        user_id_a='$user_id' OR user_id_b='$user_id'";
+        user_id_a='$user_id' OR user_id_b='$user_id'
+        ORDER BY id DESC";
 
 
 $result = $conn->query($query);
