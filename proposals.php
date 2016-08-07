@@ -45,7 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Update the proposal with the new chat_id
         $q = "UPDATE proposals
-            SET chat_id='$newChatId' where id = '$newProposalId';"
+            SET chat_id='$newChatId' where id = '$newProposalId';";
+        $result = $conn->query($q);
     }
 
     $q = "SELECT * from chats WHERE
