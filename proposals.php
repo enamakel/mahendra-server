@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = $conn->query($q);
     if ($result->num_rows > 0) {
         $proposal = $result->fetch_assoc();
-        $newProposalId = $result["id"];
+        $newProposalId = $proposal["id"];
     } else {
         // Propsal doesn't exist, create it!
         $q = "INSERT INTO proposals SET
@@ -33,16 +33,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ";
         $result = $conn->query($q);
         $newProposalId = mysqli_insert_id($conn);
-    }
 
-    // Create the chat second!
-    $q = "INSERT INTO chats SET
-        user_id_a='$userId',
-        user_id_b='$leadUserId',
-        proposal_id='$newProposalId';
-    ";
-    $result = $conn->query($q);
-    $newChatId = mysqli_insert_id($conn);
+        // Create the chat second!
+        $q = "INSERT INTO chats SET
+            user_id_a='$userId',
+            user_id_b='$leadUserId',
+            proposal_id='$newProposalId';
+        ";
+        $result = $conn->query($q);
+        $newChatId = mysqli_insert_id($conn);
+    }
 
     $q = "SELECT * from chats WHERE
         proposal_id = '$newProposalId' AND
