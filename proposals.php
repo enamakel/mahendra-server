@@ -42,6 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ";
         $result = $conn->query($q);
         $newChatId = mysqli_insert_id($conn);
+
+        // Update the proposal with the new chat_id
+        $q = "UPDATE proposals
+            SET chat_id='$newChatId' where id = '$newProposalId';"
     }
 
     $q = "SELECT * from chats WHERE
