@@ -54,8 +54,8 @@ if ($result) {
             if (isset($data["service_occupation_id"])) $resp["serviceOccupationIds"][] = $data["service_occupation_id"];
         }
 
-        $duh["user"] = $resp;
-        $buffer[] = $duh;
+        // $duh["user"] = $resp;
+        $buffer[] = $resp;
     }
     echo json_encode($buffer);
 } else echo '[]';
